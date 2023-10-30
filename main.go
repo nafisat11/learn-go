@@ -16,18 +16,6 @@ func recordMetrics() {
 	fmt.Printf("%[1]s-%[2]s", buildTimestamp, commit)
 }
 
-var sha = func() string {
-	if info, ok := debug.ReadBuildInfo(); ok {
-		for _, setting := range info.Settings {
-			if setting.Key == "vcs.revision" {
-				fmt.Println(setting.Key)
-				return setting.Value
-			}
-		}
-	}
-
-}()
-
 func main() {
 	buildInfo := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -45,6 +33,18 @@ func main() {
 	//http.ListenAndServe(":2112", nil)
 	//prometheus.MustRegister(version.NewCollector("app_name"))
 	http.Handle("/metrics", promhttp.Handler())
+
+	var sha = func() string {
+		if info, ok := debug.ReadBuildInfo(); ok {
+			for _, setting := range info.Settings {
+				fmt.Println(setting)
+				if setting.Key == "vcs.revision" {
+					return setting.Value
+				}
+			}
+		}
+		return ""
+	}()
 
 	//buildData, ok := debug.ReadBuildInfo()
 	//if !ok {
